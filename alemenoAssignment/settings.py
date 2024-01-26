@@ -11,22 +11,29 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent
 
+STATIC_DIR = BASE_DIR / "credit/static"
+
+# Initialise environment variables
+ENV_FILE = BASE_DIR / ".env"
+env = environ.Env()
+environ.Env.read_env(str(ENV_FILE))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--jxc%hl)nyj)_#k7=dqm3h)p@8)v-hsfaonlez+%c)$b=q(e2o'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -37,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'credit'
 ]
 
 MIDDLEWARE = [
@@ -70,17 +79,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'alemenoAssignment.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env.str('DB_ENGINE'),
+        'HOST': env.str('DB_HOST'),
+        'NAME': env.str('DB_NAME'),
+        'USER': env.str('DB_USER'),
+        'PASSWORD': env.str('DB_PASSWORD'),
+        'PORT': env.str('DB_PORT'),
+        'ATOMIC_REQUESTS': True,
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -100,7 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -112,7 +123,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -122,3 +132,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+if env.str('CURRENT_ENV') == 'LOCAL':
+    CELERY_BROKER_URL = "redis://localhost:6379"
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+elif env.str('CURRENT_ENV') == 'DOCKER':
+    CELERY_BROKER_URL = "redis://redis:6379"
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL

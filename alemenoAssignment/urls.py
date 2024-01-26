@@ -17,6 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from credit.views import RegisterView, CheckEligibilityView, CreateLoanView, ViewLoansView, ViewLoanView, CeleryView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('celery/', CeleryView.as_view()),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('check-eligibility/', CheckEligibilityView.as_view()),
+    path('create-loan/', CreateLoanView.as_view(), name='create-loan'),
+    path('view-loan/<int:loan_id>/', ViewLoanView.as_view(), name='view-loan'),
+    path('view-loans/<int:customer_id>', ViewLoansView.as_view(), name='view-loans')
 ]
